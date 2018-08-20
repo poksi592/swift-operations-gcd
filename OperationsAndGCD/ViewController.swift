@@ -80,7 +80,6 @@ class SumOfTwoOperation: Operation {
         }
         
         result = Addition().sumOfTwo(number1: number1, number2: number2)
-        willChangeValue(forKey: "isFinished")
     }
 }
 

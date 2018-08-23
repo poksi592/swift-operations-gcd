@@ -13,7 +13,6 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        /*
         sumGcd(number1: 1, number2: 1) { (result) in
             
             print(result)
@@ -28,6 +27,7 @@ class ViewController: UIViewController {
             
             print(result)
         }
+ 
         
         sumTwoAsyncOperations(number1: 4,
                               number2: 4,
@@ -36,8 +36,6 @@ class ViewController: UIViewController {
             
             print(result)
         }
-        */
-        
         
         sumTwoSyncAsyncOperations(number1: 6,
                                   number2: 6,
@@ -47,7 +45,6 @@ class ViewController: UIViewController {
             print(result)
         }
         
-        /*
         sumGcdTwoSyncAsyncNesting(number1: 8,
                                   number2: 8,
                                   number3: 9,
@@ -71,7 +68,6 @@ class ViewController: UIViewController {
                                         
             print(result)
         }
- */
     }
     
     func sumGcd(number1: Int, number2:Int, completion: @escaping ((String) -> Void)) {
@@ -293,6 +289,12 @@ class SumOfTwoAsyncOperation: Operation {
     private(set) var result: Int?
     let number1: Int
     let number2: Int
+    private enum State {
+        case ready
+        case executing
+        case finished
+    }
+    private var state = State.ready
     
     init(number1: Int, number2:Int) {
         
@@ -301,18 +303,26 @@ class SumOfTwoAsyncOperation: Operation {
         super.init()
     }
     
-    override func main() {
-        
-        if isCancelled {
-            return
-        }
-        
+    override var isAsynchronous: Bool {
+        return true
+    }
+    override var isExecuting: Bool {
+        return state == .executing
+    }
+    override var isFinished: Bool {
+        return state == .finished
+    }
+    override func start() {
+        state = .executing
         DispatchQueue.global().async { [weak self] in
-            
             guard let strongSelf = self else {
                 return
             }
-            strongSelf.result = Addition().sumOfTwo(number1: strongSelf.number1, number2: strongSelf.number2)
+            strongSelf.result = Addition().sumOfTwo(number1: strongSelf.number1,
+                                                    number2: strongSelf.number2)
+            strongSelf.willChangeValue(forKey: "isFinished")
+            strongSelf.state = .finished
+            strongSelf.didChangeValue(forKey: "isFinished")
         }
     }
 }

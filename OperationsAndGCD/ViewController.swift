@@ -90,27 +90,6 @@ class ViewController: UIViewController {
         queue.addOperation(operation)
     }
     
-    // Presents the case to show that using asynchronous code within the operation
-    // doesn't mean the completion will depend on result of asynchronous callback
-    // in our case the result was:
-    //
-    // Operation 2 finished!
-    // Operation Sum of 3 + 3 = 6
-    // GCD Sum of 1 + 1 = 2
-    // Operation 2 Sum of 5 + 5 = 10
-    // Operation 1 Sum of 4 + 4 = 8
-    // OperationBlock Sum of 2 + 2 = 4
-    //
-    // but naively we would expect:
-    //
-    // Operation Sum of 3 + 3 = 6
-    // GCD Sum of 1 + 1 = 2
-    //
-    // Operation 1 Sum of 4 + 4 = 8
-    // Operation 2 Sum of 5 + 5 = 10
-    // Operation 2 finished!
-    //
-    // OperationBlock Sum of 2 + 2 = 4
     func sumTwoAsyncOperations(number1: Int,
                                number2: Int,
                                number3: Int,

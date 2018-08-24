@@ -27,21 +27,12 @@ class ViewController: UIViewController {
             
             print(result)
         }
- 
         
         sumTwoAsyncOperations(number1: 4,
                               number2: 4,
                               number3: 5,
                               number4: 5) { (result) in
             
-            print(result)
-        }
-        
-        sumTwoSyncAsyncOperations(number1: 6,
-                                  number2: 6,
-                                  number3: 7,
-                                  number4: 7) { (result) in
-                                
             print(result)
         }
         
@@ -148,55 +139,6 @@ class ViewController: UIViewController {
         queue.addOperation(operation1)
         queue.addOperation(operation2)
         queue.addOperation(operation3)
-    }
-    
-    // Case shows properly synchronizes 2 asynchronous tasks with using the semaphores
-    // It is important for semaphore to have the time limit, otherwise we are blocking the thread
-    // Our output looks now as expected:
-    //
-    // GCD Sum of 1 + 1 = 2
-    // OperationBlock Sum of 2 + 2 = 4
-    // Operation Sum of 3 + 3 = 6
-    // Operation 1 Sum of 4 + 4 = 8
-    // Operation 2 Sum of 5 + 5 = 10
-    // Operation 2 finished!
-    // Operation 3 Sum of 6 + 6 = 12
-    // Operation 4 Sum of 7 + 7 = 14
-    // Operation 4 finished!
-    //
-    func sumTwoSyncAsyncOperations(number1: Int,
-                                   number2: Int,
-                                   number3: Int,
-                                   number4: Int, completion: @escaping ((String) -> Void)) {
-        
-        let queue = OperationQueue()
-        let operation1 = SumOfTwoAsyncOperation(number1: number1, number2: number2)
-        let operation2 = SumOfTwoAsyncOperation(number1: number3, number2: number4)
-        let operation3 = BlankOperation()
-        
-        var semaphore = DispatchSemaphore(value: 0)
-        queue.addOperation(operation1)
-        operation1.completionBlock = {
-            
-            completion("Operation 3 Sum of \(number1) + \(number2) = \(operation1.result ?? 0)")
-            semaphore.signal()
-        }
-        let _ = semaphore.wait(timeout: .now() + 10.0)
-        
-        semaphore = DispatchSemaphore(value: 0)
-        queue.addOperation(operation2)
-        operation2.completionBlock = {
-            
-            completion("Operation 4 Sum of \(number3) + \(number4) = \(operation2.result ?? 0)")
-            semaphore.signal()
-        }
-        let _ = semaphore.wait(timeout: .now() + 10.0)
-        
-        queue.addOperation(operation3)
-        operation3.completionBlock = {
-            
-            print("Operation 4 finished!")
-        }
     }
     
     func sumGcdTwoSyncAsyncNesting(number1: Int,
@@ -314,6 +256,7 @@ class SumOfTwoAsyncOperation: Operation {
     }
     override func start() {
         state = .executing
+        
         DispatchQueue.global().async { [weak self] in
             guard let strongSelf = self else {
                 return
